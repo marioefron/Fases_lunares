@@ -1,0 +1,516 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Fases de la Luna</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+/* Concepto: una sola pantalla nocturna. La Luna al centro, su nombre debajo y los controles al alcance del pulgar. */
+:root {
+  --sky: #0b1024;
+  --sky-2: #151c3d;
+  --line: #2b3568;
+  --moon: #ece7d2;
+  --text: #e9e7dc;
+  --muted: #98a1c6;
+  --ink: #14182f;
+  --font-display: 'Young Serif', Georgia, 'Times New Roman', serif;
+  --font-body: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+html { height: 100%; }
+body {
+  min-height: 100%;
+  margin: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 18px;
+  background: var(--sky);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+#sky {
+  position: fixed;
+  top: 0; left: 0;
+  width: 1px; height: 1px;
+  pointer-events: none;
+  z-index: 0;
+}
+.top, main, .actions { position: relative; z-index: 1; }
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 460px;
+  margin-inline: auto;
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+.pill {
+  appearance: none;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pill:hover { background: var(--sky-2); }
+
+main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 460px;
+  margin-inline: auto;
+}
+.moon-wrap {
+  width: min(84vw, 40vh, 380px);
+  min-width: 190px;
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+.moon-wrap svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  min-width: 0;
+}
+.readout h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 8.5vw, 2.7rem);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.ctx { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.stats { margin: 0; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+
+.phases {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-width: 360px;
+}
+.phases button {
+  appearance: none;
+  padding: 3px;
+  aspect-ratio: 1;
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.phases button[aria-current="true"] { border-color: var(--moon); }
+.phases svg { display: block; width: 100%; height: 100%; }
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 460px;
+  margin-inline: auto;
+  padding-top: 6px;
+}
+.btn {
+  appearance: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 18px;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+.btn svg { flex: none; }
+.btn:active { transform: scale(0.985); }
+.btn.primary {
+  min-height: 66px;
+  border: 0;
+  background: var(--moon);
+  color: var(--ink);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.btn.primary:hover { background: #f6f2e2; }
+.btn.secondary {
+  min-height: 52px;
+  border: 1.5px solid var(--line);
+  background: var(--sky-2);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 500;
+}
+.btn.secondary:hover { border-color: #3d4a8a; }
+.datepanel {
+  display: grid;
+  grid-template-columns: 0.8fr 1.5fr 1fr;
+  gap: 8px;
+}
+.datepanel select {
+  min-width: 0;
+  min-height: 50px;
+  padding: 0 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--sky-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+.datepanel select:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+.btn:focus-visible,
+.pill:focus-visible,
+.phases button:focus-visible {
+  outline: 2px solid var(--moon);
+  outline-offset: 3px;
+}
+.note {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  text-wrap: balance;
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.readout.pop > * { animation: rise 0.45s ease both; }
+.readout.pop > *:nth-child(2) { animation-delay: 0.05s; }
+.readout.pop > *:nth-child(3) { animation-delay: 0.1s; }
+@media (prefers-reduced-motion: reduce) {
+  .readout.pop > * { animation: none; }
+  .btn { transition: none; }
+}
+</style>
+
+<div id="sky" aria-hidden="true"></div>
+
+<header class="top">
+  <h1>Fases de la Luna</h1>
+  <button class="pill" id="hemi" type="button"></button>
+</header>
+
+<main>
+  <div class="moon-wrap">
+    <svg id="moon" viewBox="-150 -150 300 300" role="img" aria-label="Luna">
+      <defs>
+        <radialGradient id="glow">
+          <stop offset="0.64" stop-color="#aab6ff" stop-opacity="0.3"/>
+          <stop offset="1" stop-color="#aab6ff" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="lit" cx="0.4" cy="0.38" r="0.75">
+          <stop offset="0" stop-color="#f7f3e2"/>
+          <stop offset="0.7" stop-color="#e4decb"/>
+          <stop offset="1" stop-color="#c8c1a6"/>
+        </radialGradient>
+        <radialGradient id="dark" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#1b2248"/>
+          <stop offset="1" stop-color="#11173a"/>
+        </radialGradient>
+        <filter id="soft" filterUnits="userSpaceOnUse" x="-130" y="-130" width="260" height="260">
+          <feGaussianBlur stdDeviation="2.2"/>
+        </filter>
+        <filter id="mblur" filterUnits="userSpaceOnUse" x="-130" y="-130" width="260" height="260">
+          <feGaussianBlur stdDeviation="1.6"/>
+        </filter>
+        <clipPath id="disk"><circle r="100"/></clipPath>
+        <mask id="litmask" maskUnits="userSpaceOnUse" x="-130" y="-130" width="260" height="260">
+          <path id="litPath" fill="#fff" filter="url(#soft)"/>
+        </mask>
+        <g id="maria" fill="currentColor" filter="url(#mblur)">
+          <ellipse cx="-28" cy="-38" rx="26" ry="20"/>
+          <ellipse cx="8" cy="-34" rx="15" ry="14"/>
+          <ellipse cx="30" cy="-8" rx="22" ry="16"/>
+          <ellipse cx="64" cy="-22" rx="11" ry="8"/>
+          <ellipse cx="-62" cy="2" rx="22" ry="34"/>
+          <ellipse cx="-20" cy="38" rx="18" ry="14"/>
+          <ellipse cx="-52" cy="40" rx="11" ry="10"/>
+          <ellipse cx="50" cy="14" rx="12" ry="17"/>
+        </g>
+      </defs>
+
+      <circle id="glowC" r="150" fill="url(#glow)"/>
+      <g id="rot">
+        <circle r="100" fill="url(#dark)"/>
+        <use href="#maria" clip-path="url(#disk)" style="color:#3b4579" opacity="0.35"/>
+        <g clip-path="url(#disk)">
+          <g mask="url(#litmask)">
+            <circle r="100" fill="url(#lit)"/>
+            <use href="#maria" style="color:#8d876f" opacity="0.55"/>
+            <g fill="none" stroke="#8d876f" stroke-opacity="0.35" stroke-width="1.2">
+              <circle cx="-36" cy="-2" r="5"/>
+              <circle cx="22" cy="-58" r="4"/>
+              <circle cx="54" cy="40" r="6"/>
+              <circle cx="-70" cy="-40" r="4"/>
+              <circle cx="10" cy="22" r="7"/>
+              <circle cx="-30" cy="62" r="5"/>
+            </g>
+            <circle cx="-8" cy="70" r="12" fill="#fff" opacity="0.14" filter="url(#mblur)"/>
+            <circle cx="-8" cy="70" r="2.8" fill="#fff" opacity="0.85"/>
+          </g>
+        </g>
+        <circle r="99.5" fill="none" stroke="#b9c4ff" stroke-opacity="0.18"/>
+      </g>
+    </svg>
+  </div>
+
+  <section class="readout pop" id="readout" aria-live="polite">
+    <h2 id="name"></h2>
+    <p class="ctx" id="ctx"></p>
+    <p class="stats" id="stats"></p>
+  </section>
+
+  <div class="phases" id="phases" role="group" aria-label="Las ocho fases del ciclo"></div>
+</main>
+
+<footer class="actions">
+  <div class="datepanel" id="datePanel" hidden>
+    <select id="selD" aria-label="Día"></select>
+    <select id="selM" aria-label="Mes"></select>
+    <select id="selY" aria-label="Año"></select>
+  </div>
+  <button class="btn secondary" id="dateBtn" type="button" aria-expanded="false" aria-controls="datePanel">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>
+    <span>Elegir una fecha</span>
+  </button>
+  <button class="btn primary" id="nextBtn" type="button">
+    <span>Siguiente fase</span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </button>
+  <p class="note" id="note"></p>
+</footer>
+
+<script>
+(function () {
+  var S = 29.530588853;
+  var REF = Date.UTC(2000, 0, 6, 18, 14, 0);
+  var NAMES = ['Luna nueva', 'Luna creciente', 'Cuarto creciente', 'Gibosa creciente',
+               'Luna llena', 'Gibosa menguante', 'Cuarto menguante', 'Luna menguante'];
+  var $ = function (id) { return document.getElementById(id); };
+  var litPath = $('litPath'), glowC = $('glowC'), rot = $('rot'), moon = $('moon');
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var south = true;
+  try { if (localStorage.getItem('luna-hemisferio') === 'norte') south = false; } catch (e) {}
+
+  var shownF = 0, targetF = 0, raf = 0, ctxText = '';
+
+  function wrap(f) { return ((f % 1) + 1) % 1; }
+  function bucket(f) { return Math.floor(wrap(f) * 8 + 0.5) % 8; }
+  function fracFor(y, m, d) {
+    var t = new Date(y, m - 1, d, 12).getTime();
+    return wrap((t - REF) / 864e5 / S);
+  }
+  function pathFor(f, R) {
+    var c = Math.cos(2 * Math.PI * f);
+    var rx = (R * Math.abs(c)).toFixed(2);
+    var wax = f < 0.5;
+    var s1 = wax ? 1 : 0;
+    var s2 = wax ? (c > 0 ? 0 : 1) : (c > 0 ? 1 : 0);
+    return 'M0 ' + (-R) + 'A' + R + ' ' + R + ' 0 0 ' + s1 + ' 0 ' + R +
+           'A' + rx + ' ' + R + ' 0 0 ' + s2 + ' 0 ' + (-R) + 'Z';
+  }
+  function illum(f) { return (1 - Math.cos(2 * Math.PI * f)) / 2; }
+
+  function render(f) {
+    f = wrap(f);
+    litPath.setAttribute('d', pathFor(f, 106));
+    glowC.setAttribute('opacity', (0.25 + 0.75 * illum(f)).toFixed(2));
+  }
+
+  function buildStrip() {
+    var box = $('phases');
+    box.innerHTML = '';
+    for (var i = 0; i < 8; i++) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', NAMES[i]);
+      b.title = NAMES[i];
+      b.innerHTML =
+        '<svg viewBox="-104 -104 208 208" aria-hidden="true"><g' + (south ? ' transform="rotate(180)"' : '') + '>' +
+        '<circle r="100" fill="#1b2248" stroke="#3a4580" stroke-width="3"/>' +
+        '<path d="' + pathFor(i / 8, 100) + '" fill="#ece7d2"/></g></svg>';
+      (function (idx) {
+        b.addEventListener('click', function () { goTo(idx / 8, true, 'Fase ' + (idx + 1) + ' de 8 del ciclo'); });
+      })(i);
+      box.appendChild(b);
+    }
+    markStrip();
+  }
+  function markStrip() {
+    var cur = bucket(targetF);
+    var kids = $('phases').children;
+    for (var i = 0; i < kids.length; i++) {
+      if (i === cur) kids[i].setAttribute('aria-current', 'true');
+      else kids[i].removeAttribute('aria-current');
+    }
+  }
+
+  function showTexts(f, ctx) {
+    f = wrap(f);
+    var pct = Math.round(illum(f) * 100);
+    var age = (f * S).toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    var name = NAMES[bucket(f)];
+    $('name').textContent = name;
+    $('ctx').textContent = ctx;
+    $('stats').textContent = pct + ' % iluminada · edad lunar ' + age + ' días';
+    moon.setAttribute('aria-label', name + ', ' + pct + ' % iluminada');
+    var r = $('readout');
+    r.classList.remove('pop');
+    void r.offsetWidth;
+    r.classList.add('pop');
+    markStrip();
+  }
+
+  function animateTo(target, forward) {
+    cancelAnimationFrame(raf);
+    var from = shownF;
+    var delta = forward ? wrap(target - from) : wrap(target - from + 0.5) - 0.5;
+    if (forward && delta < 1e-6) delta = 1;
+    if (reduce || Math.abs(delta) < 1e-4) { shownF = wrap(target); render(shownF); return; }
+    var dur = 450 + 900 * Math.abs(delta);
+    var t0 = performance.now();
+    function step(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      var e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      shownF = wrap(from + delta * e);
+      render(shownF);
+      if (p < 1) raf = requestAnimationFrame(step);
+      else { shownF = wrap(target); render(shownF); }
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  function goTo(f, forward, ctx) {
+    targetF = wrap(f);
+    ctxText = ctx;
+    showTexts(targetF, ctx);
+    animateTo(targetF, forward);
+  }
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmtDate(y, m, d) {
+    return new Date(y, m - 1, d, 12).toLocaleDateString('es-AR',
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  function dateCtx(y, m, d) {
+    var n = new Date();
+    var isToday = n.getFullYear() === y && n.getMonth() + 1 === m && n.getDate() === d;
+    return (isToday ? 'Hoy · ' : '') + fmtDate(y, m, d);
+  }
+
+  function applyHemi() {
+    rot.setAttribute('transform', south ? 'rotate(180)' : '');
+    var h = $('hemi');
+    h.textContent = south ? 'Hemisferio sur' : 'Hemisferio norte';
+    h.setAttribute('aria-label', 'Cambiar hemisferio. Ahora se ve desde el ' + (south ? 'sur' : 'norte'));
+    $('note').textContent = (south
+      ? 'Vista desde el hemisferio sur: la Luna creciente se ilumina a la izquierda.'
+      : 'Vista desde el hemisferio norte: la Luna creciente se ilumina a la derecha.') +
+      ' Cálculo aproximado con el ciclo medio de 29,53 días.';
+    buildStrip();
+  }
+
+  $('hemi').addEventListener('click', function () {
+    south = !south;
+    try { localStorage.setItem('luna-hemisferio', south ? 'sur' : 'norte'); } catch (e) {}
+    applyHemi();
+  });
+
+  $('nextBtn').addEventListener('click', function () {
+    var next = (bucket(targetF) + 1) % 8;
+    goTo(next / 8, true, 'Fase ' + (next + 1) + ' de 8 del ciclo');
+  });
+
+  var selD = $('selD'), selM = $('selM'), selY = $('selY'), panel = $('datePanel');
+  var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
+               'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  function fillSel(sel, from, to, label) {
+    for (var i = from; i <= to; i++) {
+      var o = document.createElement('option');
+      o.value = i;
+      o.textContent = label ? label(i) : i;
+      sel.appendChild(o);
+    }
+  }
+  fillSel(selD, 1, 31);
+  fillSel(selM, 1, 12, function (i) { return MESES[i - 1]; });
+  fillSel(selY, 1950, 2100);
+  function applySel() {
+    var y = +selY.value, mo = +selM.value, d = +selD.value;
+    var max = new Date(y, mo, 0).getDate();
+    if (d > max) { d = max; selD.value = d; }
+    goTo(fracFor(y, mo, d), false, dateCtx(y, mo, d));
+  }
+  selD.addEventListener('change', applySel);
+  selM.addEventListener('change', applySel);
+  selY.addEventListener('change', applySel);
+  $('dateBtn').addEventListener('click', function () {
+    panel.hidden = !panel.hidden;
+    this.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+  });
+
+  // Estrellas de fondo
+  (function stars() {
+    var seed = 7;
+    function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    var s = [];
+    for (var i = 0; i < 46; i++) {
+      s.push((rnd() * 100).toFixed(1) + 'vw ' + (rnd() * 100).toFixed(1) + 'vh 0 ' +
+             (rnd() < 0.18 ? 1 : 0) + 'px rgba(220,228,255,' + (0.25 + rnd() * 0.5).toFixed(2) + ')');
+    }
+    $('sky').style.boxShadow = s.join(',');
+  })();
+
+  // Estado inicial: la fase de hoy
+  var n = new Date();
+  var y = n.getFullYear(), mo = n.getMonth() + 1, d = n.getDate();
+  selD.value = d; selM.value = mo; selY.value = y;
+  targetF = fracFor(y, mo, d);
+  shownF = targetF;
+  render(shownF);
+  applyHemi();
+  showTexts(targetF, dateCtx(y, mo, d));
+})();
+</script>
+
+</body></html>
